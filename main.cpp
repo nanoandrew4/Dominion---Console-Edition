@@ -1,3 +1,13 @@
+/*
+ * Time Spent on project: 5hrs
+ * Coding - 2hr
+ * Graphical Dev. - 1hr
+ * Brainstorming + Planning - 2hrs
+ *
+ *
+ */
+
+
 #include "mainmenu.h"
 
 #include <QApplication>

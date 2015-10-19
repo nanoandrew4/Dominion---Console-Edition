@@ -1,5 +1,5 @@
 #include "mainmenu.h"
-#include "generalview.h"
+#include "villageview.h"
 
 extern int screenWidth;
 extern int screenHeight;
@@ -34,7 +34,7 @@ void mainMenu::playGame()
     delete playButton;
     delete exitButton;
 
-    generalView *genView = new generalView();
+    villageView *genView = new villageView();
     //view->hide();
 
 }

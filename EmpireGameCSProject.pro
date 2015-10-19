@@ -14,11 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     mainmenu.cpp \
-    generalview.cpp
+    villageview.cpp
 
 HEADERS  += \
     mainmenu.h \
-    generalview.h
+    villageview.h
 
 RESOURCES += \
     resources.qrc
