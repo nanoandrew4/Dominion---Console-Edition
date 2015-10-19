@@ -19,3 +19,6 @@ SOURCES += main.cpp \
 HEADERS  += \
     mainmenu.h \
     generalview.h
+
+RESOURCES += \
+    resources.qrc
