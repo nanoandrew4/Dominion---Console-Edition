@@ -11,8 +11,8 @@ class mainMenu : public QObject{
 public:
     mainMenu();
 
-    QGraphicsScene *scene;
-    QGraphicsView *view;
+    //QGraphicsScene *scene;
+    //QGraphicsView *view;
     QPushButton *playButton;
     QPushButton *exitButton;
 private:

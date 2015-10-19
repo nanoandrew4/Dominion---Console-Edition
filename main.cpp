@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     screenHeight = screen->availableSize().height();
 
     menu = new mainMenu();
-    menu->view->show();
 
     return a.exec();
 }

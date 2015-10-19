@@ -4,6 +4,7 @@
 extern int screenWidth;
 extern int screenHeight;
 QGraphicsScene *scene;
+QGraphicsView *view;
 
 mainMenu::mainMenu()
 {
@@ -24,6 +25,8 @@ mainMenu::mainMenu()
     exitButton->setGeometry(screenWidth /2 - screenWidth /30, screenHeight *1.5/3, screenWidth /15, screenHeight /15);
     connect(exitButton, SIGNAL(released()), this, SLOT(exitGame()));
 
+    view->show();
+
 }
 
 void mainMenu::playGame()
@@ -32,9 +35,7 @@ void mainMenu::playGame()
     delete exitButton;
 
     generalView *genView = new generalView();
-    view->hide();
-    //genView->setScene(scene);
-    //genView->show();
+    //view->hide();
 
 }
 
