@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1446425569 source:/home/nanoandrew/CodeBlocks/Interval Timer/main.cpp
+	<iostream>
+	<cstdlib>
+	"time.h"
+
+1446500989 source:/home/nanoandrew/CodeBlocks/Dominion - Console Edition/Docs/Interval Timer/main.cpp
+	<iostream>
+	<cstdlib>
+	"time.h"
+

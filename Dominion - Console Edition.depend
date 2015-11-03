@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1446501619 source:/home/nanoandrew/CodeBlocks/Dominion - Console Edition/main.cpp
+	<iostream>
+	<fstream>
+	<iomanip>
+	<cstdlib>
+	<time.h>
+	<math.h>
+
