@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 #include <cstdlib>
 #include <time.h> // for time()
@@ -7,11 +6,10 @@
 
 /*
     Known Bugs:
-    - When changing intervals, you go back or forward in time (years) - HAS NO EFFECT ON GAMEPLAY, except for making you feel weird
+    - When changing intervals, you go back or forward in time (years) - HAS NO EFFECT ON GAMEPLAY, except for making you feel weird - Fixed
     - Months dont change all at once, but only once the screen is refreshed (running the whole loop) - bigger effect on gameplay than one above, but not significant,
     only means more chances of random events and more changes in happiness. Will try to counter balance - Counter balanced, random events and changes in
     happiness only happen once a month - Completely solved, tweaked formula for month calculation
-
 */
 
 using namespace std;
@@ -21,7 +19,6 @@ int overviewOpt = 0;
 
 void gameFunc(); // function in charge of the game
 void randomEvents(); // function in charge of random events
-void manualDisp(); // function in charge of displaying the manual
 void buildingControl(); // function in charge of building and demolishing buildings
 void creditsAndInfo(); // function in charge of displaying the credits
 void pause(int interval); // function used to pause the game for interval seconds
@@ -95,7 +92,7 @@ int randEffectLoss = 0;
 int secsPerMonthControl = 3; // initial interval in seconds between months
 int secsPerMonthPrevious = 0; // records previous interval to see if it changed
 
-int buildingCost[6] = {1000, 100, 400, 250, 350, 600}; //#1 is Village Forum, #2 is House, #3 is Granary, #4 is Fountain, #5 is Wheat Field, #6 is Temple
+int buildingCost[5] = {100, 400, 250, 350, 600}; //#1 is House, #2 is Granary, #3 is Fountain, #4 is Wheat Field, #6 is Temple
 
 /*
 Building codes are:
@@ -116,13 +113,12 @@ int main()
     "you will be succesful and remembered forever!"  << endl << endl;
 
     cout << "1. Begin" << endl;
-    cout << "2. Manual" << endl;
+    cout << "2. Edit game variables and play" << endl;
     cout << "3. Credits & additional info" << endl;
-    cout << "4. Edit game variables and play" << endl;
     cout << "0. Exit" << endl;
 
     cin >> mmChoice;
-    while(!cin.good() || mmChoice < 0 || mmChoice > 4){
+    while(!cin.good() || mmChoice < 0 || mmChoice > 3){
         if(!cin.good()){
             cin.clear();
             cin.ignore(128, '\n');
@@ -134,9 +130,8 @@ int main()
     system("clear");
 
     if(mmChoice == 1){gameFunc();} // if the main menu choice is 1, call the gameFunc function which is in charge of the game in general
-    else if(mmChoice == 2){manualDisp();} // if the main menu choice is 2, call the manualDisp function, which displays the game manual in the console
-    else if(mmChoice == 3){creditsAndInfo();} // if the main menu choice is 3, diplay the credits
-    else if(mmChoice == 4){editVars();} // if the main menu choice is 4, call the editVars function which will let you modify game variables
+    else if(mmChoice == 2){editVars();} // if the main menu choice is 3, diplay the credits
+    else if(mmChoice == 3){creditsAndInfo();} // if the main menu choice is 4, call the editVars function which will let you modify game variables
     else if(mmChoice == 0){cout << "Thank you for playing!" << endl; exit(0);} // if the main menu option is 0, exit the game
 
     return 0;
@@ -154,8 +149,6 @@ void gameFunc()
 
     while(!victory && !defeat) // controls when the game has ended using the victory and defeat booleans
     {
-        if(month > 6 && monthLastPass != month){randomEvents();} // after the 6 month grace period, random event will start occuring
-
         population = 0; // reset population to 0 for the calculation of population to work
         randPopulationIncrese = rand() % 5 + 1;
         for(int x = 0; x < VILLAGESIZE3; x++){
@@ -199,11 +192,11 @@ void gameFunc()
             happinessLost = 0;
 
             randomEventEndMonth = month+6; // six month cooldown after each event
-            randEventOccuring = true; // used to prevent more events from happening at once in combination with randomEventEndMonth
             pause(3);
         }
         if(randomEventEndMonth < month && randomEventEndMonth != 0){ // once six month cooldown over, make random events posible
             randEventOccuring = false;
+            happiness += happinessLost;
             randEffectLoss = 0;
             randomEventEndMonth = 0;
         }
@@ -227,8 +220,8 @@ void gameFunc()
         if(population != 0 && wheat != 0){cout << "Population to wheat ratio (try to keep below 1 and above 0): " << double(population) / double(wheat) << endl;}
         else{cout << "Population to wheat ratio (try to keep below 1): 0"  << endl;}
 
-        if(fountainCount != 0)cout << "The level of happiness is " << happiness << endl << endl;
-        else{cout << "The level of happiness is 0" << endl << endl;}
+        cout << "The level of happiness is " << happiness << endl << endl;
+        //else{cout << "The level of happiness is 0" << endl << endl;}
 
         if(cityWall && overviewMenuOptions != 7){overviewMenuOptions--;} // will set the overviewMenuOptions to 7 if the city wall has been built
 
@@ -259,14 +252,15 @@ void gameFunc()
         else if(overviewOpt == 4){
             int villageChoice = 0;
             system("clear");
-            cout << "Tax revenue per semester is: " << population *taxLevel << endl;
+            cout << "Tax revenue per semester is: " << population * (taxLevel /4) << endl;
             cout << "Current money in treasury is: " << money << endl << endl;
 
             do{
                 // prints village options
                 cout << "1. Change percent of taxation" << endl;
                 cout << "2. List villagers per slot" << endl;
-                cout << "3. List empty slots" << endl;
+                cout << "3. List empty houses" << endl;
+                cout << "4. List empty slots" << endl;
                 cout << "0. Go back" << endl;
                 cin >> villageChoice;
                 if(!cin.good()){
@@ -274,7 +268,7 @@ void gameFunc()
                     cin.ignore(128, '\n');
                 }
 
-            }while(!cin.good() || villageChoice < 0 || villageChoice > 3); // if input is invalid, error trap will rerun the loop
+            }while(!cin.good() || villageChoice < 0 || villageChoice > 4); // if input is invalid, error trap will rerun the loop
             if(villageChoice == 1){ // change taxes on citizens (1-100)
                 do{ // error trap
                     cout << "Enter new percent of tax: ";
@@ -292,7 +286,14 @@ void gameFunc()
                 }
                 pause(3);
             }
-            else if(villageChoice == 3){ // print empty slots (with value 0) using the villageSlotsAmount array
+            else if(villageChoice == 3){
+                system("clear");
+                for(int x = 0; x < actualVillageSize; x++){
+                    if(villageSlotsAmount[x] == 101 && villagePopulationPerHouse[x] == 0){cout << "House on slot " << x << " is empty" << endl;}
+                }
+                pause(3);
+            }
+            else if(villageChoice == 4){ // print empty slots (with value 0) using the villageSlotsAmount array
                 system("clear");
                 for(int x = 0; x < actualVillageSize; x++){
                     if(villageSlotsAmount[x] == 0){cout << "Slot " << x << " is empty" << endl;}
@@ -309,6 +310,7 @@ void gameFunc()
                 cout << "3. 3 seconds per month" << endl;
                 cout << "5. 5 seconds per month" << endl;
                 cout << "7. Pause game (1x10^10 seconds per month)" << endl << endl;
+
                 cin >> secsPerMonthControl;
                 if(!cin.good()){
                     cin.clear();
@@ -350,7 +352,7 @@ void gameFunc()
 
         while(month + monthStore >= semesterTaxCount){ // collects taxes every 6 months
             semesterTaxCount+=6;
-            money += population * taxLevel;
+            money += population * (taxLevel /4);
         }
 
         // for the calculation of months passed, refer to either the sample program provdided in the Docs folder explaining how it works, if you need some explaining
@@ -359,27 +361,29 @@ void gameFunc()
         month = ((currTime-startTime) /secsPerMonthControl);
         secsPerMonthPrevious = secsPerMonthControl;
         // calculation of months passed ends
-        year = monthStore + month /12 - 306;
+        if(secsPerMonthPrevious == secsPerMonthControl)year = (monthStore + month -1) /12 - 306; // calculates year
 
         //game logic follows
 
-        if(month != monthLastPass){
+        while(month + monthStore > monthLastPass){
+            if(month + monthStore > 6){
+                randomEvents();
+            }
             if(wheat == 0){wheat = 1;} // prevent FPE
-            happiness -= double(population) / double(wheat); // happiness depends on the wheat surplus or deficit
+            happiness -= (double(population) / double(wheat)) *2; // happiness depends on the wheat surplus or deficit
             for(int x = 0; x < actualVillageSize; x++){ // fountains increase happiness by 5
                 if(villageSlotsAmount[x] == 301){
                     happiness += 3;
                 }
                 if(villageSlotsAmount[x] == 501){ // temples increase happiness by 15
-                    happiness += 10;
+                    happiness += 5;
                 }
             }
-            happiness -= (population/25 + taxLevel /10 + randEffectLoss); // happiness also decreases based on quantity of population, tax level and the effect of a random event (if any)
-
+            happiness -= (population/10 + taxLevel /10 + randEffectLoss); // happiness also decreases based on quantity of population, tax level and the effect of a random event (if any)
+            monthLastPass++;
+        }
             if(money < 100 && population == 0){defeat = true;}
             if(population > 150 && happiness > 100 && actualVillageSize == VILLAGESIZE3){victory = true;} // declares victory once the objectives are met
-        }
-        monthLastPass = month;
     }
     // if you win or lose the game, program continues here
     system("clear");
@@ -458,8 +462,8 @@ void buildingControl()
                 if(!cin.good() || buildingSelection < 0 || buildingSelection > 5){cout << "Please enter a valid number" << endl; pause(2); system("clear");}
                 }while(!cin.good() || buildingSelection < 0 || buildingSelection > 5);
 
-                if(money < buildingCost[buildingSelection]){cout << "Not enough money" << endl; pause(3); return;} // prints if money for building is insufficient, and returns to top of function
-                else{money-=buildingCost[buildingSelection];} // removes the cost of the building selected from your money
+                if(money < buildingCost[buildingSelection -1]){cout << "Not enough money" << endl; pause(3); return;} // prints if money for building is insufficient, and returns to top of function
+                else{money-=buildingCost[buildingSelection -1];} // removes the cost of the building selected from your money
 
                 // sets the building code in the specified location inside the villageSlotsAmount array for future reference and counting of different variables. If the house is built, sets the selected slot in villagePopulationPerHouse to the random population increase variable for counting of population at top of gameFunc
                 if(buildingSelection == 1){villageSlotsAmount[villageSlotSelect] = 101; villagePopulationPerHouse[villageSlotSelect] = randPopulationIncrese;}
@@ -517,7 +521,7 @@ void randomEvents()
 {
 
     if(!randEventOccuring){
-        randomEventChance = rand() % 40 + 1; // random event variable calculated
+        randomEventChance = rand() % 50 + 1; // random event variable calculated
         //cout << randomEventChance << endl;
 
         granaryCount = 0;
@@ -537,7 +541,7 @@ void randomEvents()
         if(templeCount == 0){templeCount = 1;}
 
         if(randomEventChance == 1 && double(population) / double(fountainCount) > 50 && population > 20){ // disease event, decreases population in village
-            diseaseEvent = true;
+            diseaseEvent = true; randEventOccuring = true; // used to prevent more than one event at a time
             for(int x = 0; x < actualVillageSize; x++){
                 randEffect = rand() % 2;
                 villagersLost += randEffect;
@@ -549,14 +553,14 @@ void randomEvents()
 
         else if(randomEventChance == 2 && wheat / granaryCount > 50){ // plague event, decrease wheat surplus for 6 months
             randEffect = rand() % 10 +1;
-            plagueEvent = true;
+            plagueEvent = true; randEventOccuring = true;
             randEffectLoss = wheat / randEffect; // random loss of wheat percent, between 1 (biggest) and 100 (smallest)
             wheatLost = randEffectLoss;
 
         } // plague, temorarily reduces wheat surplus (less effect with granary)
 
         else if(randomEventChance == 3 && (month %12 == 3 || month %12 == 4 || month %12 == 9 || month %12 == 10)){ // destroys a building (if hits right slot), decreases wheat surplus
-            huracaneEvent = true;
+            huracaneEvent = true; randEventOccuring = true;
             randEffect = rand() % actualVillageSize + 1; // random slot
             if(villageSlotsAmount[randEffect] != 0){buildingsLost = 1;}
             villageSlotsAmount[randEffect] = 0;
@@ -568,7 +572,7 @@ void randomEvents()
         } // huracane, potentially destroys homes and reduces surplus of wheat
 
         else if(randomEventChance == 5 && month % 12 > 3 && month % 12 < 11 && !cityWall && population > 20){ // animal attack kills villagers, less impact than disease
-            animalAttackEvent = true;
+            animalAttackEvent = true; randEventOccuring = true;
             for(int x = 0; x < actualVillageSize /2; x++){ // half of village affected, loses random number of villagers per house
                 randEffect = rand() % 2;
                 villagersLost += randEffect;
@@ -581,8 +585,8 @@ void randomEvents()
 
         } // animal attack, kills a phew citizens, can be prevented with city wall (if implemented), reduces happiness temporarily
 
-        else if(randomEventChance == 8 && happiness < -10){
-            rebellionEvent = true;
+        else if(randomEventChance == 8 && happiness < -population){
+            rebellionEvent = true; randEventOccuring = true;
             for(int x = 0; x < actualVillageSize /3; x++){ // one third of slots affected, if there is a house on the slot, poulation gets reduced by a random quantity
                 randEffect = rand() % 3;
                 villagersLost += randEffect;
@@ -608,7 +612,7 @@ void randomEvents()
         }
         if(templeCount > 0 && randomEventChance == 13){ // wrath of the gods event, money, happiness, wheat reduced, building destroyed, villagers killed
             if(population / templeCount > 40){ // only if ratio of population to temples is greater than 40
-                wrathOfTheGods = true;
+                wrathOfTheGods = true; randEventOccuring = true;
 
                 randEffect = rand() % (population / templeCount) + 1;
                 randEffectLoss = randEffect; // happiness reduced
@@ -637,18 +641,6 @@ void randomEvents()
             } // wrath of the gods, decreases happiness, and can have many different effects, from previous random events (risk reduced with temples, if implemented)
         }
     }
-}
-
-void manualDisp() // displays game manual
-{
-    cout << "Welcome to the manual. Here I will explain every aspect of the game. When the game starts, you are given 1000 denarii which is the currency, a village with 11 slots"
-    " in which the 1st one is the Village Forum, leaving 10 for construction. The first option of the menu is where you choose what buildings to build or upgrade. Select one of "
-    "the 10 slots and choose what you want to build. If you have enough money, the building will be built. The second option in the menu is to demolish a building. Again, "
-    "choose what slot you wish to demolish and confirm." << endl;
-
-    pause(5);
-
-    main();
 }
 
 void creditsAndInfo() // displays game credits
@@ -733,7 +725,7 @@ void gameMap() // prints village map depending on size of village
         cout << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[15].at(0) << setw(10) << buildingType[16].at(0) << setw(10) << buildingType[17].at(0) << setw(10) << buildingType[18].at(0) << setw(10) << buildingType[19].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[20].at(0) << setw(8) << buildingType[21].at(0) << setw(8) << buildingType[22].at(0) << setw(8) << buildingType[23].at(0) << setw(8) << buildingType[24].at(0) << setw(8) << buildingType[25].at(0) << setw(6)<< cityWallPipe << endl;
-        cout << setw(14) << cityWallPipe << setw(3) << buildingType[26].at(0) << setw(9) << buildingType[27].at(0) << setw(9) << buildingType[28].at(0) << setw(9) << buildingType[29].at(0) << setw(9) << buildingType[30].at(0) << buildingType[31].at(0) << setw(9) << buildingType[32].at(0) << setw(3) << cityWallPipe << endl;
+        cout << setw(14) << cityWallPipe << setw(3) << buildingType[26].at(0) << setw(7) << buildingType[27].at(0) << setw(7) << buildingType[28].at(0) << setw(7) << buildingType[29].at(0) << setw(7) << buildingType[30].at(0) << setw(7) << buildingType[31].at(0) << setw(7) << buildingType[32].at(0) << setw(7) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[33].at(0) << setw(8) << buildingType[34].at(0) << setw(8) << buildingType[35].at(0) << setw(8) << buildingType[36].at(0) << setw(8) << buildingType[37].at(0) << setw(8) << buildingType[39].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[40].at(0) << setw(10) << buildingType[41].at(0) << setw(10) << buildingType[42].at(0) << setw(10) << buildingType[43].at(0) << setw(10) << buildingType[44].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14);
