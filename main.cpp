@@ -79,6 +79,8 @@ char confirm = 'n';
 bool victory = false;
 bool defeat = false;
 bool assasined = false;
+int popToWin = 125;
+int happinessToWin = 100;
 
 int startTime = 0;
 int currTime = 0;
@@ -92,7 +94,7 @@ int randEffectLoss = 0;
 int secsPerMonthControl = 3; // initial interval in seconds between months
 int secsPerMonthPrevious = 0; // records previous interval to see if it changed
 
-int buildingCost[5] = {100, 400, 250, 350, 600}; //#1 is House, #2 is Granary, #3 is Fountain, #4 is Wheat Field, #6 is Temple
+int buildingCost[5] = {100, 400, 250, 350, 600}; //#1 is House, #2 is Granary, #3 is Fountain, #4 is Wheat Field, #5 is Temple
 
 /*
 Building codes are:
@@ -365,7 +367,7 @@ void gameFunc()
 
         //game logic follows
 
-        while(month + monthStore > monthLastPass){
+        while(month + monthStore > monthLastPass){ // will only happen once a month
             if(month + monthStore > 6){
                 randomEvents();
             }
@@ -383,7 +385,7 @@ void gameFunc()
             monthLastPass++;
         }
             if(money < 100 && population == 0){defeat = true;}
-            if(population > 150 && happiness > 100 && actualVillageSize == VILLAGESIZE3){victory = true;} // declares victory once the objectives are met
+            if(population > popToWin && happiness > happinessToWin && actualVillageSize == VILLAGESIZE3){victory = true;} // declares victory once the objectives are met
     }
     // if you win or lose the game, program continues here
     system("clear");
@@ -401,7 +403,6 @@ void gameFunc()
 void editVars() // used for testing, and can be used as cheats, modifies initial variables
 {
     int editVarsOption = -1;
-    int setValue = 0;
 
     while(editVarsOption != 0){
         system("clear");
@@ -410,6 +411,8 @@ void editVars() // used for testing, and can be used as cheats, modifies initial
         cout << "2. Edit happiness" << endl;
         cout << "3. Edit tax level" << endl;
         cout << "4. Edit population" << endl;
+        cout << "5. Edit population required to win" << endl;
+        cout << "6. Edit happiness required to win" << endl;
         cout << "0. Start game" << endl << endl;
         do{
             cin >> editVarsOption;
@@ -417,13 +420,16 @@ void editVars() // used for testing, and can be used as cheats, modifies initial
                 cin.clear();
                 cin.ignore(128, '\n');
             }
-        if(!cin.good() || editVarsOption < 0 || editVarsOption > 4){cout << "Please enter a valid number" << endl;}
-        }while(!cin.good() || editVarsOption < 0 || editVarsOption > 5);
+        if(!cin.good() || editVarsOption < 0 || editVarsOption > 6){cout << "Please enter a valid number" << endl;}
+        }while(!cin.good() || editVarsOption < 0 || editVarsOption > 6);
 
-        if(editVarsOption == 1){cout << "Set money to: "; cin >> setValue; money = setValue;}
-        else if(editVarsOption == 2){cout << "Set happiness to: "; cin >> setValue; happiness = setValue;}
-        else if(editVarsOption == 3){cout << "Set tax level to: "; cin >> setValue; taxLevel = setValue;}
-        else if(editVarsOption == 4){cout << "Set population to (will be multiplied by 61): "; cin >> setValue; initialPopulation = setValue;}
+        // all standard error traps after cin
+        if(editVarsOption == 1){cout << "Set money to: "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> money;}while(money < 0 || !cin.good());}
+        else if(editVarsOption == 2){cout << "Set happiness to: "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> happiness;}while(happiness < 0 || !cin.good());}
+        else if(editVarsOption == 3){cout << "Set tax level to: "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> taxLevel;}while(taxLevel < 0 || !cin.good());}
+        else if(editVarsOption == 4){cout << "Set population to (will be multiplied by 61): "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> initialPopulation;}while(initialPopulation < 0 || !cin.good());}
+        else if(editVarsOption == 5){cout << "Set population required to win to: "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> popToWin;}while(popToWin < 0 || !cin.good());}
+        else if(editVarsOption == 6){cout << "Set happiness required to win to: "; do{if(!cin.good()){cin.clear(); cin.ignore(128, '\n');} cin >> happinessToWin;}while(happinessToWin < 0 || !cin.good());}
         else if(editVarsOption == 0){gameFunc();}
     }
 }
@@ -434,7 +440,7 @@ void buildingControl()
         case 1: // controls the building of buildings
         {
             do{ // error trap
-                cout << "Enter the slot number that you wish to build on" << endl << endl;
+                cout << "Enter the slot number that you wish to build on (1-" << actualVillageSize << ")" << endl << endl;
                 cin >> villageSlotSelect;
                 if(!cin.good()){
                     cin.clear();
@@ -521,7 +527,7 @@ void randomEvents()
 {
 
     if(!randEventOccuring){
-        randomEventChance = rand() % 50 + 1; // random event variable calculated
+        randomEventChance = rand() % 30 + 1; // random event variable calculated
         //cout << randomEventChance << endl;
 
         granaryCount = 0;
@@ -548,15 +554,13 @@ void randomEvents()
                 if(villagePopulationPerHouse[x] >= randEffect){villagePopulationPerHouse[x] -= randEffect;} // prevents values in the array from going negative
                 else{villagePopulationPerHouse[x] = 0;}
             }
-
-        } // disease, leads to citizen deaths, should be preventable with fountains (or at least less likely)
+        }
 
         else if(randomEventChance == 2 && wheat / granaryCount > 50){ // plague event, decrease wheat surplus for 6 months
             randEffect = rand() % 10 +1;
             plagueEvent = true; randEventOccuring = true;
             randEffectLoss = wheat / randEffect; // random loss of wheat percent, between 1 (biggest) and 100 (smallest)
             wheatLost = randEffectLoss;
-
         } // plague, temorarily reduces wheat surplus (less effect with granary)
 
         else if(randomEventChance == 3 && (month %12 == 3 || month %12 == 4 || month %12 == 9 || month %12 == 10)){ // destroys a building (if hits right slot), decreases wheat surplus
@@ -568,7 +572,6 @@ void randomEvents()
             buildingType[randEffect] = " ";
             randEffectLoss = wheat / randEffect;
             wheatLost = randEffectLoss;
-
         } // huracane, potentially destroys homes and reduces surplus of wheat
 
         else if(randomEventChance == 5 && month % 12 > 3 && month % 12 < 11 && !cityWall && population > 20){ // animal attack kills villagers, less impact than disease
@@ -582,8 +585,7 @@ void randomEvents()
             randEffect = rand() % population +1;
             randEffectLoss = randEffect; // decreases happiness by random value
             happinessLost = randEffectLoss;
-
-        } // animal attack, kills a phew citizens, can be prevented with city wall (if implemented), reduces happiness temporarily
+        } // animal attack, kills a phew citizens, can be prevented with city wall, reduces happiness temporarily
 
         else if(randomEventChance == 8 && happiness < -population){
             rebellionEvent = true; randEventOccuring = true;
@@ -645,15 +647,15 @@ void randomEvents()
 
 void creditsAndInfo() // displays game credits
 {
-
     int lineLimit = 17;
     for(int a = 0; a < 17; a++){
         system("clear");
         for(int x = 0; x < lineLimit; x++){
             cout << endl;
         }
-        cout << setw(200) << "Credits:" << endl << endl;
-        cout << setw(63) << "Coding and Idea development: Andres Sanchez Smith" << setw(0) << endl;
+        cout << setw(201) << "Credits:" << endl << endl;
+        cout << setw(63) << "Coding and Idea development: Andres Sanchez Smith" << setw(0) << endl << endl;
+        cout << setw(77) << "Project will recieve updates through GitHub unitl OpenGL version is started" << endl;
         cout << "For more of my works and future projects, visit: https://github.com/nanoandrew4" << endl;
 
         lineLimit--; // decreases the amount of endlines each pass
@@ -725,7 +727,7 @@ void gameMap() // prints village map depending on size of village
         cout << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[15].at(0) << setw(10) << buildingType[16].at(0) << setw(10) << buildingType[17].at(0) << setw(10) << buildingType[18].at(0) << setw(10) << buildingType[19].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[20].at(0) << setw(8) << buildingType[21].at(0) << setw(8) << buildingType[22].at(0) << setw(8) << buildingType[23].at(0) << setw(8) << buildingType[24].at(0) << setw(8) << buildingType[25].at(0) << setw(6)<< cityWallPipe << endl;
-        cout << setw(14) << cityWallPipe << setw(3) << buildingType[26].at(0) << setw(7) << buildingType[27].at(0) << setw(7) << buildingType[28].at(0) << setw(7) << buildingType[29].at(0) << setw(7) << buildingType[30].at(0) << setw(7) << buildingType[31].at(0) << setw(7) << buildingType[32].at(0) << setw(7) << cityWallPipe << endl;
+        cout << setw(14) << cityWallPipe << setw(5) << buildingType[26].at(0) << setw(7) << buildingType[27].at(0) << setw(7) << buildingType[28].at(0) << setw(7) << buildingType[29].at(0) << setw(7) << buildingType[30].at(0) << setw(7) << buildingType[31].at(0) << setw(7) << buildingType[32].at(0) << setw(5) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[33].at(0) << setw(8) << buildingType[34].at(0) << setw(8) << buildingType[35].at(0) << setw(8) << buildingType[36].at(0) << setw(8) << buildingType[37].at(0) << setw(8) << buildingType[39].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14) << cityWallPipe << setw(6) << buildingType[40].at(0) << setw(10) << buildingType[41].at(0) << setw(10) << buildingType[42].at(0) << setw(10) << buildingType[43].at(0) << setw(10) << buildingType[44].at(0) << setw(6) << cityWallPipe << endl;
         cout << setw(14);

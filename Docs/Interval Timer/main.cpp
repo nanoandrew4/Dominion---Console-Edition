@@ -9,6 +9,10 @@
 
 using namespace std;
 
+void pause(int pauseFor);
+
+int timeUntilUnpause = 0;
+
 int monthStore = 0;
 int monthCount = 1;
 
@@ -37,10 +41,15 @@ int main ()
         cout << "monthStore is: " << monthStore << endl;
         //cout << "secsUntilIncrease is: " << secsUntilIncrease << endl;
         cout << "currtime is: " << currTime-startTime << endl << endl;
-        system("sleep 1"); // pauses for 1, not WIN compatible
+        pause(1);
         previousInterval = interval; // used to track interval changes
 
         x++;
-
         }
+}
+
+void pause(int pauseFor)
+{
+    timeUntilUnpause = time(0) + pauseFor; // sets the time until the game resumes
+    while(time(0) < timeUntilUnpause); // waits for whatever the interval is until resuming back where the function was called
 }
